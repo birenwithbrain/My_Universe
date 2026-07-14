@@ -71,3 +71,14 @@ canvas{
     transform:scale(1.05);
 
 }
+
+#overlay{
+    transition:opacity 1s ease;
+}
+
+#overlay.hide{
+
+    opacity:0;
+    pointer-events:none;
+
+}
