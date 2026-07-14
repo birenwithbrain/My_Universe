@@ -74,7 +74,13 @@ function draw() {
 
     }
 
+
     updateParticles();
+    if (creatingUniverse) {
+
+        galaxyRotation += 0.0015;
+
+    }
     drawParticles();
 
     updateShootingStars();
@@ -99,7 +105,7 @@ function draw() {
 }
 
 let creatingUniverse = false;
-
+let galaxyRotation = 0;
 let particles = [];
 let shootingStars = [];
 
@@ -192,7 +198,8 @@ class Particle {
                 this.angle +
                 this.arm +
                 this.distance * 0.025 +
-                this.spiralOffset;
+                this.spiralOffset +
+                galaxyRotation;
 
             this.x =
                 centerStar.x +
@@ -288,6 +295,8 @@ class ShootingStar {
 
 }
 
+
+
 function createExplosion() {
 
     particles = [];
@@ -350,6 +359,7 @@ function drawShootingStars() {
     }
 
 }
+
 
 draw();
 
