@@ -26,6 +26,14 @@ function draw() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    ctx.fillStyle = "rgba(15,20,40,0.05)";
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
     if (centerStar.visible) {
 
         centerStar.pulse += 0.05;
@@ -35,8 +43,8 @@ function draw() {
             Math.sin(centerStar.pulse) * 0.5;
 
         const glow =
-            18 +
-            Math.sin(centerStar.pulse) * 10;
+            35 +
+            Math.sin(centerStar.pulse) * 20;
 
         ctx.beginPath();
         ctx.arc(
@@ -51,17 +59,49 @@ function draw() {
         ctx.shadowColor = "#ffffff";
         ctx.shadowBlur = glow;
         ctx.fill();
+        ctx.beginPath();
+
+        ctx.arc(
+            centerStar.x,
+            centerStar.y,
+            r * 4,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+        ctx.fill();
 
     }
 
     updateParticles();
     drawParticles();
 
+    updateShootingStars();
+    drawShootingStars();
+
+    const gradient = ctx.createRadialGradient(
+        canvas.width / 2,
+        canvas.height / 2,
+        200,
+        canvas.width / 2,
+        canvas.height / 2,
+        canvas.width * 0.8
+    );
+
+    gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 0.1)");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     requestAnimationFrame(draw);
 }
 
 let creatingUniverse = false;
+
 let particles = [];
+let shootingStars = [];
 
 class Particle {
 
@@ -76,7 +116,29 @@ class Particle {
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
 
-        this.radius = Math.random() * 2 + 1;
+        if (Math.random() < 0.08) {
+
+            this.radius = Math.random() * 3 + 3;
+
+        } else {
+
+            this.radius = Math.random() * 1.5 + 0.8;
+
+        }
+
+        const colors = [
+            "#ffffff",
+            "#dbeafe",
+            "#93c5fd",
+            "#c4b5fd",
+            "#67e8f9"
+        ];
+
+        this.color =
+            colors[Math.floor(Math.random() * colors.length)];
+
+        this.twinkle =
+            Math.random() * Math.PI * 2;
 
         this.alpha = 1;
         this.angle = Math.atan2(
@@ -88,6 +150,15 @@ class Particle {
 
         this.rotationSpeed =
             0.015 + Math.random() * 0.02;
+
+        this.targetDistance =
+            Math.random() * 350 + 40;
+
+        this.arm =
+            Math.random() < 0.5 ? 0 : Math.PI;
+
+        this.spiralOffset =
+            Math.random() * 1.5;
 
     }
 
@@ -112,21 +183,36 @@ class Particle {
             < 0.2
         ) {
 
+            this.distance +=
+                (this.targetDistance - this.distance) * 0.02;
+
             this.angle += this.rotationSpeed;
+
+            const spiralAngle =
+                this.angle +
+                this.arm +
+                this.distance * 0.025 +
+                this.spiralOffset;
 
             this.x =
                 centerStar.x +
-                Math.cos(this.angle) * this.distance;
+                Math.cos(spiralAngle) * this.distance;
 
             this.y =
                 centerStar.y +
-                Math.sin(this.angle) * this.distance;
+                Math.sin(spiralAngle) * this.distance;
 
         }
 
     }
 
     draw() {
+
+        this.twinkle += 0.05;
+
+        const brightness =
+            0.5 +
+            Math.sin(this.twinkle) * 0.5;
 
         ctx.beginPath();
 
@@ -138,12 +224,65 @@ class Particle {
             Math.PI * 2
         );
 
-        ctx.fillStyle = `rgba(255,255,255,${this.alpha})`;
+        ctx.fillStyle = this.color;
 
-        ctx.shadowColor = "white";
-        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+
+        ctx.shadowBlur = 8 + brightness * 12;
+
+        ctx.globalAlpha = brightness;
 
         ctx.fill();
+
+        ctx.globalAlpha = 1;
+
+    }
+
+}
+
+class ShootingStar {
+
+    constructor() {
+
+        this.x = -100;
+        this.y = Math.random() * canvas.height * 0.5;
+
+        this.speed = 18 + Math.random() * 8;
+
+        this.length = 150;
+
+        this.alpha = 1;
+
+    }
+
+    update() {
+
+        this.x += this.speed;
+        this.y += this.speed * 0.25;
+
+        this.alpha -= 0.003;
+
+    }
+
+    draw() {
+
+        ctx.beginPath();
+
+        ctx.moveTo(this.x, this.y);
+
+        ctx.lineTo(
+            this.x - this.length,
+            this.y - this.length * 0.25
+        );
+
+        ctx.strokeStyle = `rgba(255,255,255,${this.alpha})`;
+
+        ctx.lineWidth = 2;
+
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "white";
+
+        ctx.stroke();
 
     }
 
@@ -183,7 +322,37 @@ function drawParticles() {
 
 }
 
+function updateShootingStars() {
+
+    for (let i = shootingStars.length - 1; i >= 0; i--) {
+
+        shootingStars[i].update();
+
+        if (
+            shootingStars[i].alpha <= 0 ||
+            shootingStars[i].x > canvas.width + 200
+        ) {
+
+            shootingStars.splice(i, 1);
+
+        }
+
+    }
+
+}
+
+function drawShootingStars() {
+
+    for (const star of shootingStars) {
+
+        star.draw();
+
+    }
+
+}
+
 draw();
+
 
 startBtn.addEventListener("click", () => {
 
@@ -198,6 +367,22 @@ startBtn.addEventListener("click", () => {
 
             creatingUniverse = true;
             createExplosion();
+
+            setTimeout(() => {
+
+                setInterval(() => {
+
+                    if (Math.random() < 0.8) {
+
+                        shootingStars.push(
+                            new ShootingStar()
+                        );
+
+                    }
+
+                }, 3000);
+
+            }, 5000);
 
         },3000);
 
