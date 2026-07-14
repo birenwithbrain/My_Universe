@@ -187,7 +187,8 @@ function draw() {
 
 
     updateParticles();
-    if (creatingUniverse) {
+    // if (creatingUniverse) {
+    if (galaxyForming) {
 
         galaxyRotation += 0.0015;
 
@@ -337,8 +338,8 @@ class Particle {
         this.x += this.vx;
         this.y += this.vy;
 
-        this.vx *= 0.985;
-        this.vy *= 0.985;
+        this.vx *= 0.992;
+        this.vy *= 0.992;
 
         this.distance = Math.hypot(
             this.x - centerStar.x,
