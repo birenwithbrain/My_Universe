@@ -12,6 +12,12 @@ window.addEventListener("resize", () => {
     canvas.height = window.innerHeight;
     centerStar.x = canvas.width / 2;
     centerStar.y = canvas.height / 2;
+
+    nebulae[0].x = canvas.width * 0.35;
+    nebulae[0].y = canvas.height * 0.45;
+
+    nebulae[1].x = canvas.width * 0.65;
+    nebulae[1].y = canvas.height * 0.55;
 });
 
 let centerStar = {
@@ -26,13 +32,16 @@ function draw() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = "rgba(15,20,40,0.05)";
+    // ctx.fillStyle = "rgba(2,4,12,0.015)";
+    ctx.fillStyle = "#02040F";
     ctx.fillRect(
         0,
         0,
         canvas.width,
         canvas.height
     );
+
+    drawNebula();
 
     if (centerStar.visible) {
 
@@ -42,9 +51,21 @@ function draw() {
             centerStar.radius +
             Math.sin(centerStar.pulse) * 0.5;
 
-        const glow =
-            35 +
-            Math.sin(centerStar.pulse) * 20;
+        let glow = 35;
+
+        if (!creatingUniverse) {
+
+            glow =
+                35 +
+                Math.sin(centerStar.pulse) * 20;
+
+        } else {
+
+            glow =
+                80 +
+                Math.sin(centerStar.pulse) * 40;
+
+        }
 
         ctx.beginPath();
         ctx.arc(
@@ -69,7 +90,11 @@ function draw() {
             Math.PI * 2
         );
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = "transparent";
+        
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
         ctx.fill();
 
     }
@@ -96,7 +121,7 @@ function draw() {
     );
 
     gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 0.1)");
+    gradient.addColorStop(1, "rgba(0,0,0,0.04)");
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -108,6 +133,25 @@ let creatingUniverse = false;
 let galaxyRotation = 0;
 let particles = [];
 let shootingStars = [];
+
+let nebulae = [
+    {
+        x: canvas.width * 0.35,
+        y: canvas.height * 0.45,
+        radius: 280,
+        // color: "110,70,255",
+        color: "139,92,246",
+        offset: 0
+    },
+    {
+        x: canvas.width * 0.65,
+        y: canvas.height * 0.55,
+        radius: 320,
+        color: "70,170,255",
+        // color: "88,246,255",
+        offset: Math.PI
+    }
+];
 
 class Particle {
 
@@ -133,11 +177,19 @@ class Particle {
         }
 
         const colors = [
+
             "#ffffff",
+
             "#dbeafe",
+
             "#93c5fd",
+
+            "#67e8f9",
+
             "#c4b5fd",
-            "#67e8f9"
+
+            "#FFE7A3"
+
         ];
 
         this.color =
@@ -215,6 +267,8 @@ class Particle {
 
     draw() {
 
+        ctx.save();
+
         this.twinkle += 0.05;
 
         const brightness =
@@ -243,6 +297,8 @@ class Particle {
 
         ctx.globalAlpha = 1;
 
+        ctx.restore();
+
     }
 
 }
@@ -254,9 +310,9 @@ class ShootingStar {
         this.x = -100;
         this.y = Math.random() * canvas.height * 0.5;
 
-        this.speed = 18 + Math.random() * 8;
+        this.speed = 18 + Math.random() * 4;
 
-        this.length = 150;
+        this.length = 220;
 
         this.alpha = 1;
 
@@ -272,6 +328,8 @@ class ShootingStar {
     }
 
     draw() {
+
+        ctx.save();
 
         ctx.beginPath();
 
@@ -290,12 +348,66 @@ class ShootingStar {
         ctx.shadowColor = "white";
 
         ctx.stroke();
+        ctx.restore();
 
     }
 
 }
 
+function drawNebula() {
 
+    ctx.save();
+
+    for (const nebula of nebulae) {
+
+        nebula.offset += 0.002;
+
+        const x =
+            nebula.x +
+            Math.sin(nebula.offset) * 40;
+
+        const y =
+            nebula.y +
+            Math.cos(nebula.offset) * 40;
+
+        const gradient =
+            ctx.createRadialGradient(
+                x,
+                y,
+                0,
+                x,
+                y,
+                nebula.radius
+            );
+
+        gradient.addColorStop(
+            0,
+            `rgba(${nebula.color},0.15)`
+        );
+
+        gradient.addColorStop(
+            0.45,
+            `rgba(${nebula.color},0.08)`
+        );
+
+        gradient.addColorStop(
+            1,
+            `rgba(${nebula.color},0)`
+        );
+
+        ctx.fillStyle = gradient;
+
+        ctx.fillRect(
+            x - nebula.radius,
+            y - nebula.radius,
+            nebula.radius * 2,
+            nebula.radius * 2
+        );
+
+    }
+    ctx.restore();
+
+}
 
 function createExplosion() {
 
