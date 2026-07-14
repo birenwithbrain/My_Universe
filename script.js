@@ -25,7 +25,8 @@ let centerStar = {
     y: canvas.height / 2,
     radius: 3,
     visible: false,
-    pulse: 0
+    pulse: 0,
+    energy: 0
 };
 
 function draw() {
@@ -42,50 +43,87 @@ function draw() {
     );
 
     drawNebula();
+    drawShockwave();
 
     if (centerStar.visible) {
 
-        centerStar.pulse += 0.05;
+        let pulseSpeed = 0.05;
+
+        if (centerStar.energy > 0.8) {
+
+            pulseSpeed = 0.12;
+
+        }
+
+        centerStar.pulse += pulseSpeed;
 
         const r =
+
             centerStar.radius +
+
+            centerStar.energy * 4 +
+
             Math.sin(centerStar.pulse) * 0.5;
 
-        let glow = 35;
+        let glow =
 
-        if (!creatingUniverse) {
+            30 +
 
-            glow =
-                35 +
-                Math.sin(centerStar.pulse) * 20;
+            centerStar.energy * 120 +
 
-        } else {
+            Math.sin(centerStar.pulse) * 20;
 
-            glow =
-                80 +
-                Math.sin(centerStar.pulse) * 40;
+        if (centerStar.energy > 0.8) {
+
+            glow += Math.random() * 40;
 
         }
 
         ctx.beginPath();
+
+        let shakeX = 0;
+        let shakeY = 0;
+
+        if (centerStar.energy > 0.4) {
+
+            const intensity =
+                (centerStar.energy - 0.4) * 20;
+
+            shakeX =
+                (Math.random() - 0.5) * intensity;
+
+            shakeY =
+                (Math.random() - 0.5) * intensity;
+
+
+            // shakeX = (Math.random() - 0.5) * 7;
+            // shakeY = (Math.random() - 0.5) * 7;
+
+        }
+
         ctx.arc(
-            centerStar.x,
-            centerStar.y,
+            centerStar.x + shakeX,
+            centerStar.y + shakeY,
             r,
             0,
             Math.PI * 2
         );
 
-        ctx.fillStyle = "#ffffff";
+        // ctx.fillStyle = "#ffffff";
+        ctx.fillStyle =
+            centerStar.energy > 0.8
+                ? "#FFFFFF"
+                : "#F8FBFF";
+                
         ctx.shadowColor = "#ffffff";
         ctx.shadowBlur = glow;
         ctx.fill();
         ctx.beginPath();
 
         ctx.arc(
-            centerStar.x,
-            centerStar.y,
-            r * 4,
+            centerStar.x + shakeX,
+            centerStar.y + shakeY,
+            r * (4 + centerStar.energy * 4),
             0,
             Math.PI * 2
         );
@@ -96,6 +134,54 @@ function draw() {
         
         ctx.fillStyle = "rgba(255,255,255,0.35)";
         ctx.fill();
+
+        if (
+            centerStar.energy >= 1 &&
+            !explosionTriggered
+        ) {
+
+            explosionTriggered = true;
+
+            flashAlpha = 1;
+
+            shockwave.active = true;
+            shockwave.radius = 12;
+            shockwave.alpha = 1;
+
+            setTimeout(() => {
+
+                centerStar.visible = false;
+                // creatingUniverse = true;
+                // createExplosion();
+                createExplosion();
+
+                setTimeout(() => {
+
+                    creatingUniverse = true;
+                    galaxyForming = true;
+
+                }, 100);
+
+
+                setTimeout(() => {
+
+                    setInterval(() => {
+
+                        if (Math.random() < 0.8) {
+
+                            shootingStars.push(
+                                new ShootingStar()
+                            );
+
+                        }
+
+                    },3000);
+
+                },5000);
+
+            },120);
+
+        }
 
     }
 
@@ -126,10 +212,33 @@ function draw() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    if (flashAlpha > 0) {
+
+        ctx.fillStyle = `rgba(255,255,255,${flashAlpha})`;
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        flashAlpha *= 0.88;
+
+    }
+
     requestAnimationFrame(draw);
 }
 
 let creatingUniverse = false;
+let galaxyForming = false;
+let explosionTriggered = false;
+let flashAlpha = 0;
+let shockwave = {
+    active: false,
+    radius: 0,
+    alpha: 0
+};
 let galaxyRotation = 0;
 let particles = [];
 let shootingStars = [];
@@ -222,7 +331,8 @@ class Particle {
 
     update() {
 
-        if (!creatingUniverse) return;
+        // if (!creatingUniverse) return;
+        if (!centerStar.visible && !galaxyForming) return;
 
         this.x += this.vx;
         this.y += this.vy;
@@ -235,10 +345,16 @@ class Particle {
             this.y - centerStar.y
         );
 
+        // if (
+        //     Math.abs(this.vx) +
+        //     Math.abs(this.vy)
+        //     < 0.2
+        // ) {
+
         if (
+            galaxyForming &&
             Math.abs(this.vx) +
-            Math.abs(this.vy)
-            < 0.2
+            Math.abs(this.vy) < 0.2
         ) {
 
             this.distance +=
@@ -409,6 +525,46 @@ function drawNebula() {
 
 }
 
+function drawShockwave() {
+
+    if (!shockwave.active) return;
+
+    ctx.save();
+
+    ctx.beginPath();
+
+    ctx.arc(
+        centerStar.x,
+        centerStar.y,
+        shockwave.radius,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.strokeStyle =
+        `rgba(255,255,255,${shockwave.alpha})`;
+
+    ctx.lineWidth = 3;
+
+    ctx.shadowBlur = 25;
+    ctx.shadowColor = "white";
+
+    ctx.stroke();
+
+    ctx.restore();
+
+    shockwave.radius += 18;
+
+    shockwave.alpha *= 0.94;
+
+    if (shockwave.alpha < 0.02) {
+
+        shockwave.active = false;
+
+    }
+
+}
+
 function createExplosion() {
 
     particles = [];
@@ -485,28 +641,19 @@ startBtn.addEventListener("click", () => {
         centerStar.visible = true;
         centerStar.radius = 3;
 
-        setTimeout(() => {
+        const charge = setInterval(() => {
 
-            creatingUniverse = true;
-            createExplosion();
+            centerStar.energy += 0.03;
 
-            setTimeout(() => {
+            if (centerStar.energy >= 1) {
 
-                setInterval(() => {
+                centerStar.energy = 1;
+                clearInterval(charge);
 
-                    if (Math.random() < 0.8) {
+            }
 
-                        shootingStars.push(
-                            new ShootingStar()
-                        );
+        }, 30);
 
-                    }
-
-                }, 3000);
-
-            }, 5000);
-
-        },3000);
 
     }, 1000);
 
