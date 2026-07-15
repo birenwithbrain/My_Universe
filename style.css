@@ -237,3 +237,8 @@ canvas{
     }
 
 }
+
+#startBtn{
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
