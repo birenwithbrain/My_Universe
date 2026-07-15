@@ -242,3 +242,8 @@ canvas{
     -webkit-tap-highlight-color: transparent;
     outline: none;
 }
+
+#startBtn:focus,
+#startBtn:active{
+    outline: none;
+}
