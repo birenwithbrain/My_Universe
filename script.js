@@ -7,6 +7,12 @@ const ctx = canvas.getContext("2d");
 const overlay = document.getElementById("overlay");
 const startBtn = document.getElementById("startBtn");
 
+// const spaceMusic = new Audio("D:\\Programming\\WebDev\\Fun_Projects\\My_Universe\\assets\\ambient-space.mp3");
+const spaceMusic = new Audio("assets\\ambient-space.mp3");
+
+spaceMusic.loop = true;
+spaceMusic.volume = 0;
+
 const loadingSteps = [
     "Initiating Process...",
     "Initializing Quantum Field...",
@@ -45,6 +51,26 @@ let centerStar = {
     pulse: 0,
     energy: 0
 };
+
+function fadeMusicIn(){
+
+    let volume = 0;
+
+    const fade = setInterval(()=>{
+
+        volume += 0.01;
+
+        spaceMusic.volume = Math.min(volume,0.25);
+
+        if(volume >= 0.25){
+
+            clearInterval(fade);
+
+        }
+
+    },120);
+
+}
 
 function startUniverse(){
 
@@ -319,6 +345,13 @@ function draw() {
                         },700);
 
                     },4000);
+
+                    setTimeout(() => {
+
+                        showSubtitle = true;
+
+                    },6500);
+
                     welcomeX = canvas.width / 2;
 
                 },12000);
@@ -465,11 +498,24 @@ function draw() {
             welcomeY
         );
 
+        if(showSubtitle){
+
+            subtitleOpacity += 0.02;
+
+            if(subtitleOpacity > 1)
+                subtitleOpacity = 1;
+
+        }
+
         // ctx.font = "20px Georgia";
         const subtitleSize =
             Math.min(canvas.width * 0.05, 20);
 
         ctx.font = `${subtitleSize}px Georgia`;
+
+        ctx.save();
+
+        ctx.globalAlpha = subtitleOpacity;
 
         ctx.fillStyle = "rgba(255,255,255,0.75)";
 
@@ -478,6 +524,8 @@ function draw() {
             canvas.width / 2,
             canvas.height * 0.95
         );
+
+        ctx.restore();
 
         ctx.restore();
 
@@ -504,6 +552,9 @@ let messageOpacity = 0;
 let universeOpacity = 1;
 let universeScale = 1;
 let showQuotes = false;
+
+let showSubtitle = false;
+let subtitleOpacity = 0;
 
 let hideTo = false;
 
@@ -933,6 +984,9 @@ startBtn.addEventListener("click",()=>{
 
     intro.classList.remove("active");
     loader.classList.add("active");
+
+    spaceMusic.play();
+    fadeMusicIn();
 
     runLoader();
 
