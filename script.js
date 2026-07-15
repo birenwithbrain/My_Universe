@@ -1,8 +1,25 @@
+const intro = document.getElementById("intro");
+const loader = document.getElementById("loader");
+
 const canvas = document.getElementById("universe");
 const ctx = canvas.getContext("2d");
 
 const overlay = document.getElementById("overlay");
 const startBtn = document.getElementById("startBtn");
+
+const loadingSteps = [
+    "Initiating Process...",
+    "Initializing Quantum Field...",
+    "Collecting Cosmic Dust...",
+    "Creating Gravity Wells...",
+    "Igniting First Stars...",
+    "Universe Ready."
+];
+
+const loaderTitle = document.getElementById("loaderTitle");
+const loaderFill = document.getElementById("loaderFill");
+const loaderPercent = document.getElementById("loaderPercent");
+
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -28,6 +45,107 @@ let centerStar = {
     pulse: 0,
     energy: 0
 };
+
+function startUniverse(){
+
+    overlay.style.transition = "opacity 1.5s ease";
+
+    overlay.style.opacity = "0";
+
+    setTimeout(()=>{
+
+        overlay.style.display = "none";
+
+        beginUniverse();
+
+    },1500);
+
+    
+}
+
+function beginUniverse(){
+
+    centerStar.visible = true;
+    centerStar.radius = 3;
+
+    const charge = setInterval(()=>{
+
+        centerStar.energy += 0.03;
+
+        if(centerStar.energy >= 1){
+
+            centerStar.energy = 1;
+            clearInterval(charge);
+
+        }
+
+    },30);
+
+}
+
+
+function changeLoaderText(text){
+
+    loaderTitle.style.opacity = "0";
+
+    setTimeout(() => {
+
+        loaderTitle.textContent = text;
+
+        loaderTitle.style.opacity = "1";
+
+    },300);
+
+}
+
+
+
+const loadingMilestones = [
+    { percent: 0, text: "Initializing Quantum Field..." },
+    { percent: 28, text: "Collecting Cosmic Dust..." },
+    { percent: 56, text: "Creating Gravity Wells..." },
+    { percent: 82, text: "Igniting First Stars..." },
+    { percent: 100, text: "Universe Ready." }
+];
+
+function runLoader(){
+
+    let progress = 0;
+    let currentStep = 0;
+
+    const interval = setInterval(()=>{
+
+        progress++;
+
+        loaderFill.style.width = progress + "%";
+        loaderPercent.textContent = progress + "%";
+
+        if(
+            currentStep < loadingMilestones.length &&
+            progress >= loadingMilestones[currentStep].percent
+        ){
+
+            changeLoaderText(
+                loadingMilestones[currentStep].text
+            );
+
+            currentStep++;
+
+        }
+
+        if(progress >= 100){
+
+            clearInterval(interval);
+
+            setTimeout(startUniverse,1000);
+
+        }
+
+    },55);
+
+}
+
+
 
 function draw() {
 
@@ -811,29 +929,11 @@ function drawShootingStars() {
 draw();
 
 
-startBtn.addEventListener("click", () => {
+startBtn.addEventListener("click",()=>{
 
-    overlay.classList.add("hide");
+    intro.classList.remove("active");
+    loader.classList.add("active");
 
-    setTimeout(() => {
-
-        centerStar.visible = true;
-        centerStar.radius = 3;
-
-        const charge = setInterval(() => {
-
-            centerStar.energy += 0.03;
-
-            if (centerStar.energy >= 1) {
-
-                centerStar.energy = 1;
-                clearInterval(charge);
-
-            }
-
-        }, 30);
-
-
-    }, 1000);
+    runLoader();
 
 });

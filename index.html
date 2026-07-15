@@ -12,12 +12,37 @@
     <canvas id="universe"></canvas>
 
     <div id="overlay">
-        <h1>MY UNIVERSE</h1>
-        <p>From nothing... comes everything.</p>
 
-        <button id="startBtn">
-            Begin Creation
-        </button>
+        <!-- Intro Screen -->
+        <div id="intro" class="screen active">
+
+            <h1>MY UNIVERSE</h1>
+
+            <p>From nothing... comes everything.</p>
+
+            <button id="startBtn">
+                Begin Creation
+            </button>
+
+        </div>
+
+        <!-- Loader Screen -->
+        <div id="loader" class="screen">
+
+            <div id="loaderTitle">
+                Initializing Quantum Field...
+            </div>
+
+            <div class="loaderBar">
+                <div id="loaderFill"></div>
+            </div>
+
+            <div id="loaderPercent">
+                0%
+            </div>
+
+        </div>
+
     </div>
 
     <script src="script.js"></script>

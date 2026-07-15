@@ -22,8 +22,24 @@ canvas{
     background:#000;
 }
 
+/* ===========================
+   Overlay
+=========================== */
+
 #overlay{
     position:fixed;
+    inset:0;
+    background:#000;
+    z-index:100;
+}
+
+/* ===========================
+   Screens
+=========================== */
+
+.screen{
+
+    position:absolute;
     inset:0;
 
     display:flex;
@@ -31,41 +47,63 @@ canvas{
     justify-content:center;
     align-items:center;
 
-    background:#000;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
 
-    color:white;
+    transition:
+        opacity .8s ease,
+        visibility .8s ease;
 
-    z-index:10;
 }
 
-#overlay h1{
+.screen.active{
+
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+
+}
+
+/* ===========================
+   Intro
+=========================== */
+
+#intro h1{
+
+    color:#fff;
     font-size:3rem;
     letter-spacing:8px;
     margin-bottom:15px;
+
 }
 
-#overlay p{
-    color:#999;
+#intro p{
+
+    color:#8c8c8c;
     margin-bottom:40px;
+    font-size:1rem;
+
 }
 
 #startBtn{
 
     padding:15px 40px;
 
-    font-size:16px;
-
     border:none;
-
     border-radius:50px;
 
     cursor:pointer;
 
-    background:white;
+    background:#fff;
+    color:#000;
 
-    color:black;
+    font-size:16px;
 
-    transition:.3s;
+    transition:
+        transform .3s,
+        background .3s;
+
 }
 
 #startBtn:hover{
@@ -74,13 +112,128 @@ canvas{
 
 }
 
-#overlay{
-    transition:opacity 1s ease;
+/* ===========================
+   Loader
+=========================== */
+
+#loaderTitle{
+
+    color:#fff;
+
+    font-size:18px;
+
+    letter-spacing:2px;
+
+    margin-bottom:25px;
+
+    opacity:1;
+
+    transition:opacity .3s ease;
+
 }
 
-#overlay.hide{
+.loaderBar{
 
-    opacity:0;
-    pointer-events:none;
+    width:320px;
+    max-width:80vw;
+
+    height:6px;
+
+    background:rgba(255,255,255,.08);
+
+    border-radius:999px;
+
+    overflow:hidden;
+
+}
+
+#loaderFill{
+
+    width:0%;
+    height:100%;
+
+    position:relative;
+
+    background:linear-gradient(
+        90deg,
+        #58F6FF,
+        #9CFBFF,
+        #58F6FF
+    );
+
+    background-size:200% 100%;
+
+    box-shadow:
+        0 0 8px #58F6FF,
+        0 0 20px #58F6FF,
+        0 0 40px #58F6FF,
+        0 0 70px rgba(88,246,255,.9),
+        0 0 120px rgba(88,246,255,.6);
+
+    animation:
+        loaderGlow 2s ease-in-out infinite,
+        loaderFlow 2s linear infinite;
+
+    transition:width .08s linear;
+
+}
+
+#loaderFill::after{
+
+    content:"";
+
+    position:absolute;
+
+    inset:-8px;
+
+    background:inherit;
+
+    filter:blur(18px);
+
+    opacity:.9;
+
+    z-index:-1;
+
+}
+
+#loaderPercent{
+
+    margin-top:18px;
+
+    color:#8c8c8c;
+
+    font-size:14px;
+
+    letter-spacing:2px;
+
+}
+
+@keyframes loaderGlow{
+
+    0%,100%{
+        filter:brightness(1);
+        transform:scaleY(1);
+    }
+
+    50%{
+        filter:brightness(2);
+        transform:scaleY(1.25);
+    }
+
+}
+
+@keyframes loaderFlow{
+
+    from{
+
+        background-position:0% 0;
+
+    }
+
+    to{
+
+        background-position:200% 0;
+
+    }
 
 }
