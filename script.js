@@ -47,6 +47,8 @@ function draw() {
 
     if (centerStar.visible) {
 
+        ctx.save();
+
         let pulseSpeed = 0.05;
 
         if (centerStar.energy > 0.8) {
@@ -179,9 +181,35 @@ function draw() {
 
                 },5000);
 
+                setTimeout(() => {
+
+                    showMessage = true;
+
+                    welcomeY = canvas.height * 0.90;
+
+                    universeScale = 1;
+                    showQuotes = false;
+
+                    setTimeout(() => {
+
+                        hideTo = true;
+
+                        setTimeout(() => {
+
+                            showQuotes = true;
+
+                        },700);
+
+                    },4000);
+                    welcomeX = canvas.width / 2;
+
+                },12000);
+
             },120);
 
         }
+
+        ctx.restore();
 
     }
 
@@ -228,6 +256,115 @@ function draw() {
 
     }
 
+    if (showMessage) {
+
+        console.log(hideTo, toOpacity);
+
+        messageOpacity += 0.003;
+
+        if (hideTo) {
+
+            if (toOpacity > 0) {
+
+                // toOpacity -= 0.03;
+                toOpacity = Math.max(0, toOpacity - 0.03);
+
+            }
+
+            const targetY = canvas.height * 0.83;
+
+            welcomeY +=
+                (targetY - welcomeY) * 0.05;
+
+            universeScale +=
+                (1.5 - universeScale) * 0.05;
+
+        }
+
+        if(showQuotes){
+
+            quoteOpacity += 0.03;
+
+        }
+
+        if (messageOpacity > 1)
+            messageOpacity = 1;
+
+        ctx.save();
+
+        ctx.globalAlpha = messageOpacity;
+
+        ctx.fillStyle = "#FFFFFF";
+
+        ctx.textAlign = "center";
+
+        // ctx.font = "48px Georgia";
+        const titleSize =
+            Math.min(canvas.width * 0.08, 48);
+
+        ctx.font = `${titleSize}px Georgia`;
+
+        // ctx.fillText(
+        //     "Welcome",
+        //     canvas.width / 2,
+        //     // canvas.height * 0.80
+        //     // welcomeY
+        // );
+
+        ctx.save();
+
+        // if (!hideTo) {
+        ctx.globalAlpha = messageOpacity * toOpacity;
+
+        ctx.fillText(
+            "Welcome to",
+            canvas.width / 2,
+            canvas.height * 0.85
+        );
+
+        // }
+
+        ctx.restore();
+
+        // const titleSize2 =
+        //     Math.min(canvas.width * 0.5, 48);
+
+        // ctx.font = `${titleSize2}px Georgia`;
+
+        const baseSize =
+            Math.min(canvas.width * 0.08,48);
+
+        ctx.font =
+        `${baseSize * universeScale}px Georgia`;
+
+        ctx.fillText(
+            // "My Universe",
+            showQuotes
+                ? "“My Universe”"
+                : "My Universe",
+            canvas.width / 2,
+            // canvas.height * 0.90
+            welcomeY
+        );
+
+        // ctx.font = "20px Georgia";
+        const subtitleSize =
+            Math.min(canvas.width * 0.05, 20);
+
+        ctx.font = `${subtitleSize}px Georgia`;
+
+        ctx.fillStyle = "rgba(255,255,255,0.75)";
+
+        ctx.fillText(
+            "The journey has just begun.",
+            canvas.width / 2,
+            canvas.height * 0.95
+        );
+
+        ctx.restore();
+
+    }
+
     requestAnimationFrame(draw);
 }
 
@@ -243,6 +380,19 @@ let shockwave = {
 let galaxyRotation = 0;
 let particles = [];
 let shootingStars = [];
+let showMessage = false;
+let quoteOpacity = 0;
+let messageOpacity = 0;
+let universeOpacity = 1;
+let universeScale = 1;
+let showQuotes = false;
+
+let hideTo = false;
+
+let toOpacity = 1;
+
+let welcomeX = 0;
+let welcomeY = 0;
 
 let nebulae = [
     {
@@ -269,6 +419,9 @@ class Particle {
 
         this.x = centerStar.x;
         this.y = centerStar.y;
+
+        this.prevX = this.x;
+        this.prevY = this.y;
 
         const angle = Math.random() * Math.PI * 2;
         const speed = Math.random() * 6 + 2;
@@ -335,6 +488,9 @@ class Particle {
         // if (!creatingUniverse) return;
         if (!centerStar.visible && !galaxyForming) return;
 
+        this.prevX = this.x;
+        this.prevY = this.y;
+
         this.x += this.vx;
         this.y += this.vy;
 
@@ -392,6 +548,28 @@ class Particle {
             0.5 +
             Math.sin(this.twinkle) * 0.5;
 
+        if (!galaxyForming) {
+
+            ctx.beginPath();
+
+            const trailX = this.x - this.vx * 6;
+            const trailY = this.y - this.vy * 6;
+
+            ctx.moveTo(trailX, trailY);
+            ctx.lineTo(this.x, this.y);
+
+            ctx.strokeStyle =
+                `rgba(255,255,255,0.15)`;
+
+            ctx.lineWidth = 1;
+
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = this.color;
+
+            ctx.stroke();
+
+        }
+        
         ctx.beginPath();
 
         ctx.arc(
@@ -427,7 +605,7 @@ class ShootingStar {
         this.x = -100;
         this.y = Math.random() * canvas.height * 0.5;
 
-        this.speed = 18 + Math.random() * 4;
+        this.speed = 10 + Math.random() * 4;
 
         this.length = 220;
 
